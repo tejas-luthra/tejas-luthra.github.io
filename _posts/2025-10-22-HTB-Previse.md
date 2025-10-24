@@ -5,7 +5,7 @@ date: 2025-10-22
 os: Linux
 difficulty: Easy
 release: Aug 07, 2021
-tags: [Path Injection, Linux, Command Injection, Hashcat, HTB, Writeup, Retired Boxes]
+tags: [Path Injection, Linux, Command Injection, Hashcat, HTB, Writeup, Retired]
 description: "Web exploitation challenge involving Execute After Redirect (EAR) analysis and command injection to gain initial access, culminating in root privileges via sudo PATH injection."
 --- 
 
