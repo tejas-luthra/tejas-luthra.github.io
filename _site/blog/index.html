@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Tejas Luthra</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/05be29d559.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/blog.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">TL</a>
+            <div class="nav-links">
+                <a href="/#projects">Projects</a>
+                <a href="/blog">Blog</a>
+                <a href="mailto:hello@tejasl.com">Contact</a>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="blog-container">
+        <div class="blog-header">
+    <h1>Blog</h1>
+    <p>Cybersecurity writeups, technical deep-dives, and random thoughts</p>
+</div>
+
+<div class="blog-controls">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search posts...">
+    </div>
+    
+    <div class="filter-tags" id="filterTags">
+        <button class="filter-tag active" data-filter="all">All</button>
+        <button class="filter-tag" data-filter="CTF">CTFs</button>
+        <button class="filter-tag" data-filter="Seasonal">Seasonal Boxes</button>
+        <button class="filter-tag" data-filter="Seasonal">Retired Boxes</button>
+        <button class="filter-tag" data-filter="Seasonal">HTB</button>
+    </div>
+</div>
+
+<div class="posts-grid" id="postsGrid">
+    
+    <article class="post-card" data-tags="Path Injection,Linux,Command Injection,Hashcat,HTB,Writeup,Retired Boxes">
+        <div class="post-meta">
+            <time datetime="2025-10-22T00:00:00-06:00">
+                October 22, 2025
+            </time>
+            
+            <span class="difficulty difficulty-easy">
+                Easy
+            </span>
+            
+        </div>
+        
+        <h2 class="post-title">
+            <a href="/blog/2025/10/22/HTB-Previse/">Hack The Box Write-Up: Previse</a>
+        </h2>
+        
+        
+        <p class="post-excerpt">Web exploitation challenge involving Execute After Redirect (EAR) analysis and command injection to gain initial access, culminating in root privileges via sudo PATH injection.</p>
+        
+        
+        <div class="post-footer">
+            <div class="post-tags">
+                
+                <span class="tag">Path Injection</span>
+                
+                <span class="tag">Linux</span>
+                
+                <span class="tag">Command Injection</span>
+                
+            </div>
+            <a href="/blog/2025/10/22/HTB-Previse/" class="read-more">
+                Read more <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </article>
+    
+</div>
+
+<div id="noResults" class="no-results" style="display: none;">
+    <i class="fas fa-search"></i>
+    <p>No posts found matching your search.</p>
+</div>
+
+    </main>
+
+    <script src="/assets/js/script.js"></script>
+    <script src="/assets/js/blog.js"></script>
+</body>
+</html>

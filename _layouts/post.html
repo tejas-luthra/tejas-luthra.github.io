@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }} - Tejas Luthra</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/05be29d559.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/blog.css">
+    <link rel="stylesheet" href="/assets/css/post.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">TL</a>
+            <div class="nav-links">
+                <a href="/#projects">Projects</a>
+                <a href="/blog">Blog</a>
+                <a href="mailto:hello@tejasl.com">Contact</a>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <article class="post-container">
+        <header class="post-header">
+            <a href="/blog" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+            
+            <div class="post-meta-header">
+                {% if page.category %}
+                <span class="post-category">{{ page.category }}</span>
+                {% endif %}
+                {% if page.difficulty %}
+                <span class="difficulty difficulty-{{ page.difficulty | downcase }}">
+                    {{ page.difficulty }}
+                </span>
+                {% endif %}
+            </div>
+            
+            <h1>{{ page.title }}</h1>
+            
+            <div class="post-info">
+                <time datetime="{{ page.date | date_to_xmlschema }}">
+                    <i class="fas fa-calendar"></i>
+                    {{ page.date | date: "%B %d, %Y" }}
+                </time>
+                {% if page.competition %}
+                <span class="competition">
+                    <i class="fas fa-trophy"></i>
+                    {{ page.competition }}
+                </span>
+                {% endif %}
+            </div>
+            
+            {% if page.tags %}
+            <div class="post-tags-header">
+                {% for tag in page.tags %}
+                <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </header>
+
+        <div class="post-content">
+            {{ content }}
+        </div>
+
+        <footer class="post-footer">
+            <a href="/blog" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to all posts
+            </a>
+        </footer>
+    </article>
+
+    <script src="/assets/js/script.js"></script>
+</body>
+</html>

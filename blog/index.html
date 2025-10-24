@@ -1,0 +1,67 @@
+---
+layout: blog
+title: Blog
+---
+
+<div class="blog-header">
+    <h1>Blog</h1>
+    <p>Cybersecurity writeups, technical deep-dives, and random thoughts</p>
+</div>
+
+<div class="blog-controls">
+    <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search posts...">
+    </div>
+    
+    <div class="filter-tags" id="filterTags">
+        <button class="filter-tag active" data-filter="all">All</button>
+        <button class="filter-tag" data-filter="CTF">CTFs</button>
+        <button class="filter-tag" data-filter="Seasonal">Seasonal Boxes</button>
+        <button class="filter-tag" data-filter="Seasonal">Retired Boxes</button>
+        <button class="filter-tag" data-filter="Seasonal">HTB</button>
+    </div>
+</div>
+
+<div class="posts-grid" id="postsGrid">
+    {% for post in site.posts %}
+    <article class="post-card" data-tags="{{ post.tags | join: ',' }}">
+        <div class="post-meta">
+            <time datetime="{{ post.date | date_to_xmlschema }}">
+                {{ post.date | date: "%B %d, %Y" }}
+            </time>
+            {% if post.difficulty %}
+            <span class="difficulty difficulty-{{ post.difficulty | downcase }}">
+                {{ post.difficulty }}
+            </span>
+            {% endif %}
+        </div>
+        
+        <h2 class="post-title">
+            <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+        </h2>
+        
+        {% if post.description %}
+        <p class="post-excerpt">{{ post.description }}</p>
+        {% else %}
+        <p class="post-excerpt">{{ post.excerpt | strip_html | truncatewords: 30 }}</p>
+        {% endif %}
+        
+        <div class="post-footer">
+            <div class="post-tags">
+                {% for tag in post.tags limit:3 %}
+                <span class="tag">{{ tag }}</span>
+                {% endfor %}
+            </div>
+            <a href="{{ post.url | relative_url }}" class="read-more">
+                Read more <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </article>
+    {% endfor %}
+</div>
+
+<div id="noResults" class="no-results" style="display: none;">
+    <i class="fas fa-search"></i>
+    <p>No posts found matching your search.</p>
+</div>

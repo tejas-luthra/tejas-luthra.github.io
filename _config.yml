@@ -1,0 +1,27 @@
+# Site settings
+title: Tejas Luthra
+email: hello@tejasl.com
+description: Cybersecurity student at SANS.edu
+baseurl: ""
+url: "https://www.tejasl.com"
+
+# Build settings
+markdown: kramdown
+permalink: /blog/:year/:month/:day/:title/
+
+# Layouts directory
+layouts_dir: _layouts
+
+# Collections
+collections:
+  posts:
+    output: true
+    permalink: /blog/:year/:month/:day/:title/
+
+# Exclude files
+exclude:
+  - README.md
+  - LICENSE
+  - CNAME
+  - Gemfile
+  - Gemfile.lock
