@@ -333,6 +333,10 @@ body {
     gap: 2rem;
 }
 
+.projects-grid > * {
+    display: flex;
+}
+
 .project-card-link {
     text-decoration: none;
     color: inherit;
